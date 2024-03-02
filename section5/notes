@@ -1,0 +1,242 @@
+// --------------------------------------------------
+
+// What's a Map? - Section 5 - 54
+
+// Maps - collection of key value pairs
+
+// Key -> Value 
+// Key -> Value 
+// Key -> Value 
+
+// Map - Hash - Object - Dict
+// Go  - Ruby - JavaScript - Python
+
+// All the keys will be the same type,while the values will be the same type as other values 
+
+// 1st way to declare a map
+func main() {
+	colors := map[string]string{
+		
+	}
+}
+// Declaring a map of key (string) and value (string)
+
+// --------------------------------------------------
+
+// Manipulating Maps - Section 5 - 55
+
+// 2nd way to print a map 
+
+func main() {
+	var colors map[string]string
+}
+
+
+// 3rd way to print a map
+func main() {
+	colors :=make(map[string]string)
+}
+
+
+// Delete existing key off of a map
+
+func main() {
+	colors :=make(map[string]string)
+
+	colors["white"] = "#ffffff"
+
+	delete(colors, "white")
+
+	fmt.Println(colors)
+}
+
+// --------------------------------------------------
+
+// Iterating Over Maps - Section 5 - 56
+
+func printMap(c map[string]string){
+	for color, hex := range c{}
+}
+
+// c = argument type
+// map[string]string = type of the map
+// color = key for this step through the loop
+// hex = value for this step through the loop
+
+func main(){
+	colors := map[string]string{
+		"red": "#ff0000",
+		"green": "#4bf745",
+		"white": "#ffffff",
+	}
+
+	printMap(colors)
+
+}
+
+func printMap(c map[string]string) {
+	for color, hex := range c{
+		fmt.Println("Hex code for", color, "is", hex)
+	}
+}
+
+// Go code defines a program that creates a map called colors, where keys are color names (strings) and values are their corresponding hexadecimal color codes (also strings). Then, it calls a function printMap passing this map as an argument.
+
+// Use Case IRL
+
+//Managing User Sessions in Web Applications:
+
+package main
+
+import (
+    "fmt"
+    "net/http"
+    "sync"
+)
+
+// SessionManager handles the storage and retrieval of user sessions.
+type SessionManager struct {
+    sessions map[string]map[string]interface{} // Map to store session data
+    mu       sync.Mutex                         // Mutex to ensure safe concurrent access
+}
+
+// NewSessionManager creates a new SessionManager.
+func NewSessionManager() *SessionManager {
+    return &SessionManager{
+        sessions: make(map[string]map[string]interface{}),
+    }
+}
+
+// CreateSession creates a new session for a user.
+func (sm *SessionManager) CreateSession(sessionID string) {
+    sm.mu.Lock()
+    defer sm.mu.Unlock()
+    sm.sessions[sessionID] = make(map[string]interface{})
+}
+
+// SetSessionValue sets a value in the session for a given key.
+func (sm *SessionManager) SetSessionValue(sessionID, key string, value interface{}) {
+    sm.mu.Lock()
+    defer sm.mu.Unlock()
+    session, ok := sm.sessions[sessionID]
+    if !ok {
+        return
+    }
+    session[key] = value
+}
+
+// GetSessionValue retrieves a value from the session for a given key.
+func (sm *SessionManager) GetSessionValue(sessionID, key string) interface{} {
+    sm.mu.Lock()
+    defer sm.mu.Unlock()
+    session, ok := sm.sessions[sessionID]
+    if !ok {
+        return nil
+    }
+    return session[key]
+}
+
+func main() {
+    sessionManager := NewSessionManager()
+
+    http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+        // Handle user login and create a session
+        sessionID := "user123" // In a real application, this would be generated dynamically
+        sessionManager.CreateSession(sessionID)
+        sessionManager.SetSessionValue(sessionID, "username", "john_doe")
+        fmt.Fprintf(w, "Login successful! Session ID: %s", sessionID)
+    })
+
+    http.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
+        sessionID := r.URL.Query().Get("sessionID")
+        if sessionID == "" {
+            http.Error(w, "Session ID not provided", http.StatusBadRequest)
+            return
+        }
+        username := sessionManager.GetSessionValue(sessionID, "username")
+        if username == nil {
+            http.Error(w, "Invalid session ID", http.StatusUnauthorized)
+            return
+        }
+        fmt.Fprintf(w, "Welcome, %s!", username)
+    })
+
+    // Start the server
+    fmt.Println("Server started at :8080")
+    http.ListenAndServe(":8080", nil)
+}
+
+
+// --------------------------------------------------
+
+// Differences Between Maps and Structs - Section 5 - 57
+
+// Map
+// All keys must be the same type
+// All values must be the same type
+// Keys are indexed - we can iterate over them 
+// Use to represent a collection of related properties 
+// Don't need to know all the keys at compile time
+// Reference Type!
+
+// Structs
+// Values can be of different types
+// Keys don't support indexing 
+// You need to know all the different fields at compile time
+// Use to represent a "thing" with a lot of different properties 
+// Value Type!
+
+// --------------------------------------------------
+
+// Quiz 9 
+
+// 1). Can some of the keys in a single map be of type int  and others of type string ?
+
+// Answer). No
+
+
+// 2). Can some of the values in a single map be of type int  and others of type string ?
+
+// Answer). No
+
+
+// 3). Take a look at the following code.  What would the print statement log out?
+
+package main
+import "fmt"
+ 
+func main() {
+ m := map[string]string{
+   "dog": "bark",
+ }
+ 
+ changeMap(m)
+ 
+ fmt.Println(m)
+}
+ 
+func changeMap(m map[string]string) {
+ m["cat"] = "purr"
+}
+
+// Answer). map[dog: bark cat: purr]
+
+
+
+// 4). What would happen if we tried to run the following program?  Look closely at all the code in it :)
+
+package main
+import "fmt"
+ 
+func main() {
+ m := map[string]string{
+   "dog": "bark",
+   "cat": "purr",
+ }
+ 
+ for key, value := range m {
+   fmt.Println(value)
+ }
+}
+
+// Answer). The compiler would throw an error because the variable key was created but never used. 

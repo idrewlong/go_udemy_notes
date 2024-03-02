@@ -1,0 +1,253 @@
+package main
+
+import "fmt"
+
+func main(){
+	// this explicitly says card will only be string
+	// var card string = "Ace of Spades" 
+	// the := can only be used inside of functions; only used when defining a new variable
+	card := "Ace of Spades"
+	fmt.Println(card)
+}
+
+// --------------------------------------------------
+// Side Notes:
+
+// Basic Go Types
+	// bool
+	// string
+	// int
+	// float64
+
+// --------------------------------------------------
+
+// Functions and Return Types - Section 3-17
+
+// newCard is the defined function 
+func newCard() string {
+	return "Five of Diamonds"
+}
+// When executed, the function will return a value type of string
+
+// --------------------------------------------------
+
+// Slices and For Loops - Section 3-18
+
+// array - fixed length list of things
+
+// slice - an array that can grow or shrink
+
+// slices and arrays must be have the same data type 
+
+// Iterate over a slice - For Loop
+
+for i, card := range cards {
+	fmt.Println(i, card)
+}
+
+// i - index of the element in the array
+// card - current card we're iterating over
+// range cards - take the slice of 'cards' and loop over it
+// fmt.Println(i, card) - run this one time for each card in the slice
+
+// --------------------------------------------------
+
+// OO Approach vs Go Approach  - Section 3-19
+
+// There is no Object Oriented Programming in Go
+
+// OO approach
+	// Deck Class -> cards (string)
+		// print(function), shuffle(function), saveToFile(function)
+
+// Go Approach
+	// Base Go Types -> [string, integer, float, array, map]
+	
+	//- We want to "extend" a base type and add some extra functionality to it
+
+		// type deck []string 
+
+		// - Tell Go we want to create an array of strings and add a bunch of functions specifically made to work with it
+
+		// Functions with 'deck' as a 'receiver' 
+		
+		//- A function with a receiver is like a "method" - a function that belongs to an instance 
+
+// Cards Folder
+	// main.go - code to create and manipulate a deck
+	// deck.go  -code that describes what a deck is and how it works
+	//deck_test.go - code to automatically test the deck
+
+// --------------------------------------------------
+
+// Custom Type Declarations  - Section 3-20
+
+func main(){
+	cards := []string {"Ace of Diamonds", newCard()}
+	cards = append(cards, "Six of Spades")
+
+	for i, card := range cards {
+		fmt.Println(i, card)
+	}
+}
+// replace the []string with deck since a new type has been declared
+
+// deck.go add the for loop from main.go
+
+func (d deck) print(){
+	for i, card := range d {
+		fmt.Println(i, card)
+	}
+}
+// --------------------------------------------------
+
+// Receiver functions  - Section 3-21
+
+// In the above code, we added what is known as a receiver (d deck)
+
+// Purpose
+
+// func (d deck) print(){
+	// Any variable of type "deck" now gets access to the "print" method
+
+// the receiver sets up methods on variables we create 
+
+// (d deck)
+	// d - the actual copy of the deck we're working with is available in the function as a variable called 'd'
+	// deck - Every variable of type 'deck' can call this function on itself
+	// if the variable isn't used (d) replace it with an _
+
+// --------------------------------------------------
+
+// Slice Range Syntax - Section 3-23
+
+// the first element in a slice is labeled 0 
+
+// fruits = ["apple", "banana", "grape", "orange"]
+// fruit[0] = "apple"
+// fruit[3] = "orange"
+
+// fruits[startIndexIncluding : upToNotIncluding]
+
+// fruits[0:2] = "apple" "banana"
+
+// --------------------------------------------------
+
+// Byte Slices - Section 3-25
+
+// go package io/util
+
+// WriteFile - writes data to a file named by filename. If the file does not exist, WriteFile creates it with permissions perm, otherwise WriteFile truncates it before writing.
+
+// func WriteFile(filename string, data []byte, perm os.FileMode) error
+
+// Byte Slice
+// "Hi There" -> [72 105 32 116 104 101 114 101 33]
+
+// Byte slices are commonly used in Go for handling binary data, reading from or writing to files, network operations, and other scenarios where raw data manipulation is required.
+
+// --------------------------------------------------
+
+// Joining a Slice of Strings - Section 3-27
+
+// Type Conversion 
+
+// []byte("Hi There!")
+
+// type we want - value we have 
+
+// greeting := "Hi There!"
+// fmt.Println([]byte(greeting))
+
+func (d deck) toString() string {
+	return strings.Join([]string(d), ",")
+	
+}
+
+// --------------------------------------------------
+
+// Saving Data to Hard Drive - Section 3-28
+
+// os package - io/ioutil is outdated 
+
+func (d deck) saveToFile(filename string) error {
+	return os.WriteFile(filename, []byte(d.toString()), 0666)
+}
+
+// --------------------------------------------------
+
+// Reading from Hard Drive - Section 3-29
+
+// os package - io/ioutil is outdated 
+
+
+func newDeckFromFile(filename string) deck {
+	bs, err := os.ReadFile(filename)
+	if err != nil {
+		// Option #1 log error and return a call to a new deck
+		// Option #2 - log error and quit program 
+	}
+}
+
+// err - value type of 'error' If nothing went wrong, it will have a value of 'nil'
+
+// --------------------------------------------------
+
+// Error Handling - Section 3-30
+
+// --------------------------------------------------
+
+// Shuffling a Deck - Section 3-31
+// randomize the deck 
+
+// for each index in cards
+	// generate a random number between 0 and len(cards) -1 
+	// Swap the current card and the card at cards[randomNumber]
+
+// func Intn
+// func Intn(n int) int
+
+	d[i], d[newPosition] = d[newPosition], d[i] - swap function 
+// take whatever the new position is and assign it to i, then take whatever is at the i and place it in newPosition
+
+
+// --------------------------------------------------
+
+// Random Number Generation - Section 3-32
+
+// type Rand
+// type Rand struct {
+	// contains filtered or unexported fields
+//	}
+
+// func New
+// func New(src Source) *Rand
+
+func (d deck) shuffle(){
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
+
+	for i := range d{
+		newPosition := r.Intn(len(d) - 1)
+
+		d[i], d[newPosition] = d[newPosition], d[i]
+	}
+}
+
+
+// --------------------------------------------------
+
+// Testing with Go - Section 3-34
+
+// to make a test,create a new file ending in _test.go
+// deck_test.go
+
+// To run all the tests in a package, run the command
+// go test
+
+// --------------------------------------------------
+
+// Writing Useful Test - Section 3-36
+
+

@@ -1,0 +1,555 @@
+// --------------------------------------------------
+
+// Purpose of Interfaces - Section 6 - 58
+
+// Review
+
+// Every value has a type 
+// Every function has to specify the type of its arguments
+
+// So does that mean...
+	// Every function we ever write has to be rewritten to accommodate different types even if the logic in it is identical?
+
+// Is this the proper way to do the code in the deck section?
+
+func(d deck) shuffle()
+// Can only shuffle a value of type 'deck'
+
+func (s []float64) shuffle()
+// Can only shuffle a value of type '[]float64'
+
+func (s []string) shuffle()
+// Can only shuffle a value of type '[]string'
+
+func (s []int) shuffle()
+// Can only shuffle a value of type '[]int'
+
+// Chat bot for languages
+
+// type englishBot struct
+func (englishBot) getGreeting() string
+
+func printGreeting(eb englishBot)
+
+// type spanishBot struct
+func (spanishBot) getGreeting() string
+
+func printGreeting(sb spanishBot)
+
+// --------------------------------------------------
+
+// Problems without Interfaces - Section 6 - 59
+
+func (eb englishBot) getGreeting() string {
+	// custom logic for generating english greeting
+	return "Hi There"
+}
+
+func (sb spanishBot) getGreeting() string {
+	return "Hola!"
+}
+
+// Both function use getGreeting() but have two different types
+
+
+func main() {
+	eb := englishBot{}
+	sb := spanishBot{}
+
+	printGreeting(eb)
+	printGreeting(sb)
+}
+
+func printGreeting(eb englishBot) {
+	fmt.Println(eb.getGreeting())
+}
+
+func printGreeting(sb spanishBot) {
+	fmt.Println(sb.getGreeting())
+}
+
+func (eb englishBot) getGreeting() string {
+	// custom logic for generating english greeting
+	return "Hi There"
+}
+
+func (sb spanishBot) getGreeting() string {
+	return "Hola!"
+}
+
+// can't define two functions with the same name
+
+
+// --------------------------------------------------
+
+// Interfaces in Practice - Section 6 - 60
+
+type bot interface {
+	getGreeting() string
+}
+
+// condensed down the printGreeting function into on single implementation
+
+type bot interface {
+	getGreeting() string
+}
+// interpreted as everyone in this program has a new type called bot - a third custom type 
+
+// Interfaces in Go define a set of methods. Any type that implements all the methods of an interface implicitly implements that interface.
+
+type englishBot struct{}
+type spanishBot struct{}
+
+// These structs don't have any fields or methods explicitly declared.
+
+func main() {
+	eb := englishBot{}
+	sb := spanishBot{}
+
+	printGreeting(eb)
+	printGreeting(sb)
+}
+
+func printGreeting(b bot) {
+	fmt.Println(b.getGreeting())
+}
+//Inside the function, it calls the getGreeting() method on the passed bot instance and prints the returned greeting string.
+
+// --------------------------------------------------
+
+// Rules of Interfaces - Section 6 - 61
+
+// In our program we have a type struct called englishBot, with a function that has getGreeting() associated with it.
+
+// the getGreeting() function expects to see a type englishBot as its receiver. In which, we did the same thing with the spanishBot
+
+// We then defined a new interface called bot, the interface expects to see any type inside the application that implements the function getGreeting()string
+
+// if any other type does return this, then it is also considered to be of type bot
+
+type bot interface {
+	getGreeting(string, int)(string, error)
+}
+
+// bot - interface name
+// getGreeting - function name 
+// (string, int) - list of argument types
+// (string, error) - list of return types 
+
+
+// Concrete type                     Interface Type
+// map                                     bot
+// struct
+// int
+// string
+// englishBot
+
+// --------------------------------------------------
+
+// Extra Interface Notes - Section 6 - 62
+
+// Interfaces are NOT generic types (Other languages have 'generic types - go famously does not)
+
+// Interfaces are 'implicit' - (We don't manually have to say that our custom type satisfies some interface.)
+
+// Interfaces are a contract to help us manage types (GARBAGE IN -> GARBAGE OUT. If our custom types implementation of a function is broken then interfaces won't help!)
+
+// Interfaces are tough. Step #1 is understanding how to read them. (Understand how to read interfaces in the standard lib. Writing your own interfaces is tough and requires experience.)
+
+
+// --------------------------------------------------
+
+// The HTTP Package - Section 6 - 63
+
+// Overview
+
+// HTTP request to google.com
+
+// print response to terminal
+
+// https://pkg.go.dev/github.com/astaxie/beego/httplib
+// https://pkg.go.dev/net/http
+// https://pkg.go.dev/net/http#Get
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
+
+
+func main() {
+	resp, err := http.Get("http://google.com")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	fmt.Println(resp)
+	// simplistic way of resp, not accurate 
+}
+
+
+
+// --------------------------------------------------
+
+// Reading the Docs - Section 6 - 64
+
+// https://pkg.go.dev/net/http#Get
+
+// Body represents the response Body
+Body io.ReadCloser
+
+// https://pkg.go.dev/io#ReadCloser
+
+// type Reader
+// Reader is the interface that wraps the basic Read Method
+
+type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+
+
+// Response Struct
+// Status -> string
+// StatusCode -> int
+// Body -> io.ReadCloser ->
+
+//io.ReadCloser Interface
+// Reader       ->        io.Reader Interface 
+			    Read([]byte)(int, err)
+// Closer       ->        io.Closer Interface
+			    Close()(error)
+
+// --------------------------------------------------
+
+// More Interface Syntax - Section 6 - 65
+
+// In Go we can take multiple interfaces and assemble them together to form another Interface
+
+// Example
+
+type ReadCloser interface {
+	Reader
+	Closer
+}
+
+// we have to satisfy the requirements for both the Reader and the Closer Interface
+
+// --------------------------------------------------
+
+// Interface Review - Section 6 - 66
+
+// Interfaces in Go provide a way to specify the behavior of an object. They define a set of methods that a type must implement in order to satisfy the interface. Interfaces enable polymorphism, allowing different types to be treated in a uniform way based on their behavior rather than their specific implementation.
+
+// --------------------------------------------------
+
+// The Reader Interface  - Section 6 - 67
+
+// Source of Input                       Returns                      To Print It...
+// HTTP Request Body			 []flargen           func printHTTP([]flargen)
+// Text file on hard drive               []string            func printFile([]string)
+// Image on hard drive                   jpegne              func printImage(jpegne)
+// User entering text into CLI           []byte		     func printText([]byte)
+// Data from analog sensor in machine    []float             func printData([]float)
+
+
+// Source of Input -> Reader -> []byte
+
+
+// --------------------------------------------------
+
+// More on the Reader Interface  - Section 6 - 68
+
+type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+
+// thing that wants to read the body
+// Byte Slice 
+//    |
+//  Thing that implements Reader
+// Read([]byte) (int, err)
+// Byte Slice
+//   ^^^^^
+// Raw body of the Response
+
+// --------------------------------------------------
+
+// Working with the Read Function  - Section 6 - 69
+
+bs := make([]byte, 99999)
+
+
+// make is a built-in function in Go used to create slices, maps, and channels.
+
+// []byte specifies the type of the data structure being created, which in this case is a byte slice.
+
+// 99999 specifies the length of the slice. This means the slice will have 99999 elements.
+
+// Thing to Read data into
+// 0 1 ........ n-1 n ->    Read
+// <!doctype html>   ->     Read
+// 	<Head>..
+// real source of data
+
+
+func main() {
+	resp, err := http.Get("http://google.com")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	bs := make([]byte, 99999)
+	resp.Body.Read(bs)
+	fmt.Println(string(bs))
+}
+
+// --------------------------------------------------
+
+// The Writer Interface  - Section 6 - 70
+
+// This is the same as above 
+
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+)
+
+
+func main() {
+	resp, err := http.Get("http://google.com")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	io.Copy(os.Stdout, resp.Body)
+}
+
+// This code uses the io.Copy function to copy the response body (resp.Body) to the standard output (os.Stdout).
+
+// io.Copy reads from the input (resp.Body) and writes to the output (os.Stdout) until either the input is empty or an error occurs.
+
+// Using io.Copy is more idiomatic and concise. It efficiently copies the response body to the standard output without needing to explicitly manage a buffer.
+
+// In practice, io.Copy is preferred for simple tasks like this, as it's more straightforward and typically performs well.
+
+
+
+// Source of Data -> Reader -> []byte
+
+// []byte -> Writer -> Some form of output 
+
+// Writer Interface describes something that can take info and send it outside of our program
+
+// We need to find something in the standard lib that *implements* the Writer Interface and use that to log out all the data that we're receiving from the Reader
+
+
+// --------------------------------------------------
+
+// The io.Copy Function  - Section 6 - 71
+
+// https://pkg.go.dev/io
+// https://pkg.go.dev/io#Writer
+
+// Writer is the interface that wraps the basic Write method.
+
+// Write writes len(p) bytes from p to the underlying data stream. It returns the number of bytes written from p (0 <= n <= len(p)) and any error encountered that caused the write to stop early. Write must return a non-nil error if it returns n < len(p). Write must not modify the slice data, even temporarily.
+
+type Writer interface {
+	Write(p []byte) (n int, err error)
+}
+
+
+// https://pkg.go.dev/io#example-Copy
+// func copy
+
+func Copy(dst Writer, src Reader) (written int64, err error)
+
+// Copy copies from src to dst until either EOF is reached on src or an error occurs. It returns the number of bytes copied and the first error encountered while copying, if any.
+
+// A successful Copy returns err == nil, not err == EOF. Because Copy is defined to read from src until EOF, it does not treat an EOF from Read as an error to be reported.
+
+// If src implements WriterTo, the copy is implemented by calling src.WriteTo(dst). Otherwise, if dst implements ReaderFrom, the copy is implemented by calling dst.ReadFrom(src).
+
+// io.Copy
+
+// Something that implements the Writer interface -> os.Stdout -> value of type file -> file has a function called 'Write -> Therefore, it implements the 'Write' Interface
+
+// Something that implements the Reader interface -> resp.Body
+
+// --------------------------------------------------
+
+// The Implementation of io.Copy  - Section 6 - 72
+
+// What does copy do?
+
+func Copy(dst Writer, src Reader) (written int64, err error) {
+	return copyBuffer(dst, src, nil)
+}
+
+// --------------------------------------------------
+
+// The Custom Writer  - Section 6 - 73
+
+
+func (logWriter) Write(bs []byte) (int, error){
+	
+}
+
+// (logWriter) declares a function receiver, which associates the method with a specific type. In this case, logWriter is the receiver type.
+
+// Write is the name of the method.
+
+// (bs []byte) (int, error) is the signature of the method, which consists of:
+
+// bs []byte: This is a parameter of the method, which is a byte slice. It represents the data that the method will write.
+
+// (int, error): These are the return types of the method. The method returns two values:
+
+// An integer, representing the number of bytes written.
+// An error, representing any error that occurred during the write operation.
+
+package main
+
+import (
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+)
+
+type logWriter struct {}
+
+func main() {
+	resp, err := http.Get("http://google.com")
+	if err != nil {
+		fmt.Println("Error:", err)
+		os.Exit(1)
+	}
+
+	lw := logWriter{}
+
+	io.Copy(lw, resp.Body)
+}
+
+func (logWriter) Write(bs []byte) (int, error){
+	fmt.Println((string(bs)))
+	fmt.Println("Just wrote this many bytes:", len(bs))
+	return len(bs), nil
+}
+
+// --------------------------------------------------
+
+// Quiz 10
+
+// 1). When we say that interfaces can be satisfied implicitly, we mean that..
+
+// Answer: We don't have to write any extra code to say that some type satisfies an interface 
+
+// 2). To say that a type satisfies an interface means that...
+
+// Answer: The type implements all of the functions contains in the interface definition
+
+// 3). In the following code, does the square type satisfy the shape interface?
+
+type shape interface {
+	area() int
+    }
+     
+    type square struct {
+	sideLength int
+    }
+     
+    func (s square) area() int {
+	return s.sideLength * s.sideLength
+    }
+     
+    func printArea(s shape) {
+	fmt.Println(s.area())
+    }
+
+// Answer: Yes, because square defines the area function that returns an int
+
+// 4). Take a look at the following code.  Does the rectangle type satisfy the shape  interface?
+
+type shape interface {
+	area() int
+    }
+     
+    type square struct {
+	sideLength int
+    }
+     
+    type rectangle struct {
+	height float64
+	width float64
+    }
+     
+    func (s square) area() int {
+	return s.sideLength * s.sideLength
+    }
+     
+    func (r rectangle) area() float64 {
+	return r.height * r.width
+    }
+     
+    func printArea(s shape) {
+	fmt.Println(s.area())
+    }
+
+// Answer: No, because rectangle's version of the area function returns a float64, but the shape interface expects a return type of int
+
+// 5). Take a look at the following code.  Type square appears to successfully implement the shape interface, but the implementation of square 's area function looks broken - it always returns a value of 10 no matter what the side length of the square is.  Will the shape  interface do anything to help us catch this error?
+
+type shape interface {
+	area() int
+    }
+     
+    type square struct {
+	sideLength int
+    }
+     
+    func (s square) area() int {
+	return 10
+    }
+     
+    func printArea(s shape) {
+	fmt.Println(s.area())
+    }
+
+// Answer: No interfaces are only used to help with types. We can easily write code that does something completely wrong
+
+// 6). Types that implement the Reader interface are generally used to...
+
+// Answer: Read information from an outside data source into our application 
+
+// 7). Imagine that you ask a coworker to create a new type that implements the Reader  interface to take data from a text file and print it on the screen.  They present you with the following code:
+
+type textFileReader struct {}
+ 
+func (textFileReader) Read(bs []byte) (int, error) {
+    return "Information from a text file"
+}
+
+// They say that this code successfully compiled, so it must be correct. You then review their code and give them feedback.  What would you say?
+
+
+// Answer: I would say that while the textFileReader type conforms to the requirements of the Reader interface, it doesn't actually implement the desired behavior of reading a file from the hard drive
+
+// 8). Because interfaces are satisfied implicitly, it can be tough to figure out which types satisfy which interfaces.  
+
+// Take a look at the type File inside the os package here: https://golang.org/pkg/os/#File
+
+// Does the File type satisfy both the Reader and Writer interfaces?
+
+// answer: Yes
+

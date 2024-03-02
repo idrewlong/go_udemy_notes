@@ -1,0 +1,524 @@
+// Structs in Go - Section 4 - 42
+
+// Struct - Data Structure - a collection of properties that are related together
+
+// Card Struct Field Definition
+// suit -> <string>
+// value -> <string>
+
+// Card Struct
+// suit -> "Spades"
+// value -> "Ace"
+
+// --------------------------------------------------
+
+// Defining Structs - Section 4 - 43
+
+type person struct {
+	firstName string
+	lastName string
+}
+
+// Type #1 for Declaring Structs
+func main(){
+	alex := person{"Alex", "Anderson"}
+	fmt.Println(alex)
+}
+
+
+
+// --------------------------------------------------
+
+// Declaring Structs - Section 4 - 44
+
+// Type #2 for Declaring Structs
+func main(){
+	alex := person{firstName: "Alex", lastName: "Anderson"}
+	fmt.Println(alex)
+}
+
+// --------------------------------------------------
+
+// Updating Struct Values - Section 4 - 45
+
+// Type #3 for Declaring Structs
+func main(){
+	var alex person
+	// since no info on alex it becomes a zero value
+	fmt.Println(alex)
+	fmt.Printf("%+v", alex)
+	// "%+v" prints all values of alex into the print 
+}
+
+// go run main.go 
+
+// returns 
+
+{ }
+{firstName: lastName:}%  
+
+// Type        Zero Value
+// string          ""
+// int             0
+// float           0
+// bool            false
+
+func main(){
+	var alex person
+	alex.firstName = "Alex"
+	alex.lastName = "Anderson"
+	fmt.Println(alex)
+	fmt.Printf("%+v", alex)
+}
+
+// --------------------------------------------------
+
+// Embedding Structs - Section 4 - 46
+
+// type person
+// firstName -> <string>
+// lastName -> <string>
+// contact -> <contactInfo>
+
+// type contactInfo
+// email -> <string>
+// zip -> <int>
+
+type contactInfo struct {
+	email string
+	zip int
+}
+
+type person struct {
+	firstName string
+	lastName string
+	contact contactInfo
+}
+
+
+func main() {
+	jim := person{
+		firstName: "Jim",
+		lastName: "Jones",
+		contact: contactInfo{
+			email: "jimjones@gmail.com",
+			zip: 37288,
+		},
+	}
+	fmt.Printf("%+v", jim)
+}
+// --------------------------------------------------
+
+// Structs with Receiver Functions - Section 4 - 47
+
+// Second way to embed a struct
+
+type contactInfo struct {
+	email string
+	zip int
+}
+
+type person struct {
+	firstName string
+	lastName string
+	contactInfo
+}
+
+func main() {
+	jim := person{
+		firstName: "Jim",
+		lastName: "Jones",
+		contactInfo: contactInfo{
+			email: "jimjones@gmail.com",
+			zip: 37288,
+		},
+	}
+	jim.updateName("Jimmy")
+	jim.print()
+}
+
+func (p person) updateName(newFirstName string){
+	p.firstName = newFirstName
+}
+
+func (p person) print() {
+	fmt.Printf("%+v", p)
+
+}
+
+// --------------------------------------------------
+
+// Pass By Values(Pointers) - Section 4 - 47
+
+
+// jim := person
+// jim.updateName("Jimmy")    func(p person) updateName(){}
+
+// RAM
+// Address        Value 
+// 0000           
+// 0001           person{firstName: "Jim"....}     <- Jim
+// 0002
+// 0003           person{firstName: "Jim"....}   <- p
+// 004
+
+// We arent' updating the original struct of Jim, but updated the p which is the copy of the function call
+
+// --------------------------------------------------
+
+// Structs with Pointers - Section 4 - 49
+
+func main() {
+	jim := person{
+		firstName: "Jim",
+		lastName: "Jones",
+		contactInfo: contactInfo{
+			email: "jimjones@gmail.com",
+			zip: 37288,
+		},
+	}
+	jimPointer := &jim
+	jimPointer.updateName("Jimmy")
+	jim.print()
+}
+
+func (pointertoPerson *person) updateName(newFirstName string){
+	(*pointertoPerson).firstName = newFirstName
+}
+
+func (p person) print() {
+	fmt.Printf("%+v", p)
+
+}
+
+// --------------------------------------------------
+
+// Pointer Operations - Section 4 - 50
+
+// jimPointer := &jim
+
+	         // RAM
+	        // Address        Value 
+	        // 0000           
+// jimPointer->	// 0001           person{firstName: "Jim"....}     <- Jim
+	        // 0002
+	        // 0003           
+	        // 004
+
+
+// &variable - give me the memory address of the value this variable is pointing at 
+// *pointer - gives me the value this memory address is pointing at
+
+
+// the *pointerToPerson is the memory address that Jim exists at 
+
+func (pointertoPerson *person) updateName(newFirstName string){
+	(*pointertoPerson).firstName = newFirstName
+}
+
+
+// *person - this is a type description it means we're working with a pointer to a person
+
+// *pointertoPerson - this is an operator - it means we want to manipulate the value the pointer is referencing 
+
+/// 0001         person{firstName: "Jim"....}
+//   ^              ^
+//  address        value
+
+// turn address into value with *address
+// turn value into address with &value 
+
+
+// --------------------------------------------------
+
+// Pointer Shortcut - Section 4 - 51
+
+// &jim assigns to a pointer which is followed by jimPointer.updateName("Jimmy") to replace the pointed data set
+
+jimPointer := &jim
+jimPointer.updateName("Jimmy")
+
+
+// updated 
+
+jim.updateName("Jimmy")
+jim.print()
+}
+
+func (pointertoPerson *person) updateName(newFirstName string){
+(*pointertoPerson).firstName = newFirstName
+}
+
+// go allows us to use the jim.updateName since it is still referring to that data type 
+
+jimPointer := &jim
+jimPointer.updateName("Jimmy")
+// ^
+// Type of person or a pointer to a person 
+
+  jim.updateName("Jimmy")
+// ^
+// type of person
+
+func (pointertoPerson *person) updateName(
+	//               ^ 
+	// Type of person or a pointer to a person
+
+
+// --------------------------------------------------
+
+// Gotchas with Pointers - Section 4 - 52
+
+
+// --------------------------------------------------
+
+// Quiz
+
+// 1). Whenever you pass an integer, float, string, or struct into a function, what does Go do with that argument?
+
+// It creates a copy of each argument, and these copies are used inside of a function 
+
+// 2). What will the following program print out?
+
+package main
+import "fmt"
+
+func main(){
+	name := "Bill"
+
+	fmt.Println(&name)
+}
+
+// the memory address that "Bill" is stored at
+
+// 3). What is the &  operator used for?
+
+// Turning a value into a pointer 
+
+// 4).When you see a * operator in front of a pointer, what will it turn the pointer into?
+
+// A Value
+
+// 5). When the following program runs, the fmt.Println call reports that the latitude field of newYork is still equal to 40.73 .  What changes should we make to get the latitude of newYork to update to 41.0 ?
+
+package main
+import "fmt"
+
+type location struct {
+	longitude float64
+	latitude float64
+       }
+	
+       func main() {
+	newYork := location{
+	  latitude: 40.73,
+	  longitude: -73.93,
+	}
+	
+	newYork.changeLatitude()
+	
+	fmt.Println(newYork)
+       }
+	
+       func (lo location) changeLatitude() {
+	lo.latitude = 41.0
+       }
+
+// Change the reciver type of changeLatitude to *location, then replace lo with (*lo) in the function body. This will turn the pointer lo into a value type and then update it. 
+
+// 6). Take a look at the following snippet of code.
+
+package main
+ 
+import "fmt"
+ 
+type location struct {
+ longitude float64
+ latitude float64
+}
+ 
+func main() {
+ newYork := location{
+ latitude: 40.73,
+ longitude: -73.93,
+ }
+ 
+ newYork.changeLatitude()
+ 
+ fmt.Println(newYork)
+}
+ 
+func (lo *location) changeLatitude() {
+ (*lo).latitude = 41.0
+}
+
+// In the 'changeLatitude' function, what is *location in the receiver list (after the word 'func') communicating to us?
+
+// It specifies the type of the receiver that the function expects.
+
+// 7). Take a look at the following program.  What will the Println  function in the main  function print out?
+
+package main
+ 
+import "fmt"
+ 
+func main() {
+    name := "Bill"
+    updateValue(name)
+    fmt.Println(name)
+}
+ 
+func updateValue(n string) {
+    n = "Alex"
+}
+
+// "Bill"
+
+// 8). Take a look at the following program.  The changeLatitude function expects a receiver of type pointer to a location struct , but in the main function the receiver is a value type of a struct.  What will happen when this code is executed?
+
+package main
+ 
+import "fmt"
+ 
+type location struct {
+ longitude float64
+ latitude float64
+}
+ 
+func main() {
+ newYork := location{
+   latitude: 40.73,
+   longitude: -73.93,
+ }
+ 
+ newYork.changeLatitude()
+ 
+ fmt.Println(newYork)
+}
+ 
+func (lo *location) changeLatitude() {
+ (*lo).latitude = 41.0
+}
+
+// this program uses a shortcut, where Go will automatically assime that even though newYork.changeLatitude() is using a vlaue type we probably meant to pass in a pointer to the newYork
+
+// Here's a tricky one!  What will the following program print out?
+
+package main
+ 
+import "fmt"
+ 
+func main() {
+    name := "Bill"
+ 
+    fmt.Println(*&name)
+}
+
+// The String "Bill"
+
+
+
+// --------------------------------------------------
+
+// Referrences vs Value Types - Section 4 - 53
+
+
+
+// Arrays                          Slices
+// -------------------------------------------------
+// Primitive data structure |   Can grow and shrink
+
+// Can't be resized         |   Used 99% of the time for lists of elements
+
+// Rarely used directly     |
+
+
+mySlice := [] string {"Hi", "There", "How", "Are", "You"}
+
+// slice                             Array
+// pointer to head    ->     [ "Hi" ]  "There"   "How"   "Are"   "You"
+// capacity
+// length
+
+
+
+// Value Types                     Reference Types
+// --------------------------------------------------
+// int                   |         slices
+// float                 |         maps
+// string                |         channels
+// bool                  |         pointers
+// structs               |         functions
+
+// Use pointers to change the Value Types
+
+// Don't worry about pointers with Reference Types 
+
+
+
+// --------------------------------------------------
+
+// Quiz
+
+// 1). When we create a slice, Go will automatically create which two data structures?
+
+// An array and a structure that records the length of the slice, the capacity of the slice, and a reference to the underlying array
+
+// 2). In the following code snippet, when we pass mySlice to the updateSlice function, is the mySlice value being copied before being passed into the function?
+
+package main
+ 
+import "fmt"
+ 
+func main() {
+ mySlice := []string{"Hi", "There", "how", "are", "you?"}
+ 
+ updateSlice(mySlice)
+ 
+ fmt.Println(mySlice)
+}
+ 
+func updateSlice(s []string) {
+ s[0] = "Bye"
+}
+
+// Yes the code is being copied 
+
+// 3). With 'value types' in Go, do we have to worry about pointers if we want to pass a value to a function and modify the original value inside the function?
+
+// Yes
+
+// 4). With 'reference types' in Go, do we have to worry about pointers if we want to pass a value to a function and modify the original value inside the function?
+
+// No
+
+// 5). Is a slice a 'value type' or a 'reference type'
+
+//  Reference type, because the slice contains a reference to the actual underlying list of records
+
+
+// 6). We've been discussing about how to use pointers to avoid passing something to a function by value.  So instead of passing a value to a function, we pass a pointer to that value.  But we've also said many times that Go is a "pass by value" language, which *always* copies arguments that are passed to a function.  Take a glance at the following code snippet, which gets a pointer to name called namePointer and prints out the memory address of the pointer itself!  
+
+// Then in the function, we take the pointer that was passed as an argument and print out the address of that pointer too.
+
+// Do you think the memory address printed by both Println calls will be the same?  Why or why not?
+
+package main
+ 
+import "fmt"
+ 
+func main() {
+ name := "bill"
+ 
+ namePointer := &name
+ 
+ fmt.Println(&namePointer)
+ printPointer(namePointer)
+}
+ 
+func printPointer(namePointer *string) {
+ fmt.Println(&namePointer)
+}
+
+
+// The log statements will print different address because *everything* in Go is pass by value 

@@ -1,0 +1,620 @@
+// --------------------------------------------------
+
+// Website Status Checker  - Section 7 - 78
+
+// status checker -> http request -> domain names ex.(http://www.facebook.com)
+
+package main
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	for _, link := range links {
+		
+	}
+}
+
+
+// --------------------------------------------------
+
+// Printing Site Status  - Section 7 - 79
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	for _, link := range links {
+		checkLink(link)
+	}
+}
+
+func checkLink(link string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+}
+
+
+// --------------------------------------------------
+
+// Serial Link Checking  - Section 7 - 80
+
+// process of link checking 
+
+// domains -> take first link from slice -> make request -> GET http://google.com -> wait for a response, log it -> take next link, make request -> GET http://facebook.com -> wait for a response, log it -> repeat 
+
+// What if we could run all of these links concurrently at the same time?
+
+// Go Routines
+
+// --------------------------------------------------
+
+// Go Routines  - Section 7 - 81
+
+// Our running program (a process)
+// Go Routine
+// Engine that executes the code 
+
+// Main Routine
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	for _, link := range links {
+		go checkLink(link)
+	}
+}
+
+// go creates a new Go Routine to run the checkLink(link) function. runs all functions at the same time for running the GET request to the URL
+
+go checkLink(link)
+// create a new thread go routine
+// and runs this function with it 
+
+// --------------------------------------------------
+
+// Theory of Go Routines  - Section 7 - 82
+
+// go routine executes lines of code line by line in one single function 
+
+// What are goroutines doing?
+
+// One CPU Core -> Go Scheduler -> Go routine
+//               <-            <-  Go Routine
+
+// By default Go tries to use one core!
+// Not running at same time with one CPU
+
+// With Multiple Cores, we can run the Go Routines at the same time
+// Concurrency is not parellelism 
+
+// Concurrency - We can have multiple threads executing code. If one thread blocks, another on is picked up and worked on
+
+// Parallelism - multiple threads executed at the exact same time. Requires multiple CPU's
+
+// Our running program 
+// Main Routine - main routine we created when we launched our program
+// Child Go Routine
+// Child Go Routine - child routines created by the 'go' keyword
+// Child Go Routine
+
+// --------------------------------------------------
+
+// Channels  - Section 7 - 83
+
+for _, link := range links {
+	go checkLink(link)
+}
+
+// Channels are used to communicate in between different running Go Routines 
+// use a channel to make sure the main routine is aware of when each of these child go routines have completed their code 
+
+// Go Routine -> Channel of type string -> Go Routine
+// channels must match type 
+
+
+// --------------------------------------------------
+
+// Channel Implementation  - Section 7 - 84
+
+// Sending Data with Channels 
+
+// channel <- 5 ( Send the value 5 into the channel)
+// myNumber <- channel (Wait for a value to be sent into the channel. When we get one, assign the value to 'myNumber')
+// fmt.Println(<- channel) (Wait for a value to be sent into the channel. When we get one, log it out immediately.)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+	fmt.Println(<- c)
+}
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- "Might be down I think!"
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+	c <- "Yep it's up!"
+}
+
+// --------------------------------------------------
+
+// Blocking Channels  - Section 7 - 85
+
+// Main Routine 
+
+func main(){
+	links := []string{
+		"http://google.com", 
+		"http://amazon.com",
+	}
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+
+	fmt.Println(<- c)
+}
+
+// go Routine 
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- "Might be down I think"
+		return
+	}
+	fmt.Println(link, "is up!")
+	c <- "Yep its up"
+}
+
+// after run go routine, the main routine will wait for a message to come through the channel, referring to the fmt.Println(<- c) - blocking line of code 
+
+// Program started
+// for loop complete, now waiting on channel
+// google routine finished, sent data into channel, main routine receives and wakes up
+// main routine prints value, no more code to run, so it exits 
+
+
+// --------------------------------------------------
+
+// Receiving Messages  - Section 7 - 86
+
+	fmt.Println(<- c)
+	fmt.Println(<- c)
+	fmt.Println(<- c)
+	fmt.Println(<- c)
+	fmt.Println(<- c)
+
+// replace these with a for loop
+
+for i := 0; i < len(links); i++ {
+	fmt.Println(<- c)
+}
+
+// full code 
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+	for i := 0; i < len(links); i++ {
+		fmt.Println(<- c)
+	}
+}
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- "Might be down I think!"
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+	c <- "Yep it's up!"
+}
+
+// --------------------------------------------------
+
+// Repeating Routines  - Section 7 - 87
+
+//infinte loop 
+
+for  {
+	go checkLink(<- c, c)
+}
+
+// updated code 
+package main
+
+import (
+	"fmt"
+	"net/http"
+)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+	for  {
+		go checkLink(<- c, c )
+	}
+}
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- link
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+	c <- link
+}
+
+
+// --------------------------------------------------
+
+// Alternative Loop Syntax  - Section 7 - 88
+
+// re fractored code for loop 
+
+for l := range c {
+	go checkLink(l, c )
+}
+
+// equivalant to other code in last section 
+
+// for l := range c { ... }: This is a loop that iterates over each value received from the channel c. It waits for values to be sent on the channel and assigns each received value to the variable l.
+
+// range c means the loop continues until the channel c is closed. When the channel is closed, the loop exits.
+
+// go checkLink(l, c): Inside the loop, a new goroutine is spawned for each received value l. The checkLink function is called with the received value l as an argument, along with the channel c.
+
+// go keyword is used to launch the checkLink function call as a new goroutine, allowing the loop to continue without waiting for the function call to complete.
+
+
+// --------------------------------------------------
+
+// Sleeping a Routine  - Section 7 - 89
+
+// https://pkg.go.dev/time
+// https://pkg.go.dev/time#example-Sleep
+
+time.Sleep(2 * time.Second)
+// pause the current go routine for seconds before executing the next one
+
+
+// --------------------------------------------------
+
+// Function Literals - Section 7 - 90
+
+// replacing for loop with a function literal 
+
+// compared to other languages 
+
+// Javascript -> Anonymous Function 
+// Ruby -> Lambda
+// Python -> Lambda
+// C# -> Lambda
+// PHP - > Anonymous Function 
+// Go - > Function Literal
+
+// function literal - unanamed function we use to wrap code, so we can execute it at some point in the future
+
+// add parenthesis after {} to invoke it 
+
+for l := range c {
+	go func(){
+		time.Sleep(5 * time.Second)
+		checkLink(l, c)
+	} ()
+}
+
+
+// --------------------------------------------------
+
+// Channels Gotcha!  - Section 7 - 91
+
+// when the code is ran, it will print the first 5 calls and then repeat the facebook call in blocks of 5
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+	for l := range c {
+		go func(){
+			time.Sleep(2 * time.Second)
+			checkLink(l, c)
+		} ()
+	}
+
+	
+}
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- link
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+	c <- link
+}
+
+// due to warning message on l
+
+// loop variable l capt by func literal 
+
+// child routine is pointing to the same main routine memory address 
+
+// never reference same literal in two routines 
+
+//updated code 
+
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+)
+
+func main() {
+	links := []string{
+		"http://google.com",
+		"http://facebook.com",
+		"http://stackoverflow.com",
+		"http://github.com",
+		"http://amazon.com",
+	}
+
+	c := make(chan string)
+
+	for _, link := range links {
+		go checkLink(link, c)
+	}
+	for l := range c {
+		go func(link string){
+			time.Sleep(2 * time.Second)
+			checkLink(link, c)
+		} (l)
+	}
+
+	
+}
+
+func checkLink(link string, c chan string) {
+	_, err := http.Get(link)
+	if err != nil {
+		fmt.Println(link, "might be down!")
+		c <- link
+		return
+	
+	}
+
+	fmt.Println(link, "is up!")
+	c <- link
+}
+
+// --------------------------------------------------
+
+// Quiz 11: Channels and Go Routines
+
+// 1). Go Routines and Channels are tough, so let's start with the basics!
+//Which of the following best describes what a go routine is?
+
+
+
+
+// Answer:  a seperate link of code execution that can be used to handle blocking code 
+
+
+
+// 2). What's the purpose of a channel?
+
+
+
+
+// Answer: For communication between go routines 
+
+
+
+// 3).Take a look at the following program.  Are there any issues with it?
+
+package main
+ 
+import (
+ "fmt"
+)
+ 
+func main() {
+ greeting := "Hi There!"
+ 
+ go (func() {
+     fmt.Println(greeting) 
+ })()
+}
+
+
+// Answers: 
+	// The greeting variable is referenced from directly in the go routine, which might lead to issues if we eventually start to change the value of greeting
+
+	// The program will likely exit before the fmt.Println function has an opportunity to actualy print anything out to the terminal; this might not be the intent of the program 
+
+// 4). Here's a tough one - Is there any issue with the following code?
+
+package main
+ 
+func main() {
+ c := make(chan string)
+ c <- []byte("Hi there!")
+}
+
+
+// Answer: The channel is expecting a value of type string, but we are passing in a value of type byte slice, which is not techinically a string.
+
+
+
+// 5).Another tough one!  Is there any issue with the following code?
+
+package main
+ 
+func main() {
+     c := make(chan string)
+     c <- "Hi there!"
+}
+
+// Answer: The syntax of this program is ok, but the program will never exit because it will wait for something to receive the value we're passing into the channel.
+
+
+
+// 6).Ignoring whether or not the program will exit correctly, are the following two code snippets equivalent?
+
+// snippet #1
+package main
+ 
+import "fmt"
+ 
+func main() {
+ c := make(chan string)
+ for i := 0; i < 4; i++ {
+     go printString("Hello there!", c)
+ }
+ 
+ for s := range c {
+     fmt.Println(s)
+ }
+}
+ 
+func printString(s string, c chan string) {
+ fmt.Println(s)
+ c <- "Done printing." 
+}
+
+//snippet #2
+package main
+ 
+import "fmt"
+ 
+func main() {
+ c := make(chan string)
+ 
+ for i := 0; i < 4; i++ {
+     go printString("Hello there!", c)
+ }
+ 
+ for {
+     fmt.Println(<- c)
+ }
+}
+ 
+func printString(s string, c chan string) {
+ fmt.Println(s)
+ c <- "Done printing." 
+}
+
+
+
+
+// Answer: they are the same
+
